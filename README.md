@@ -12,16 +12,18 @@ Required python packages:
 - pytube
 - BeautifulSoup
 - requests
-- json
 - pandas
 - moviepy
 ```
+
+An easy way to do this is by running `pip3 install -t requirements.txt`, which installs the necessary python packages from the attached text file.
 
 stock python packages:
 ```
 - os
 - sys
 - re
+- json
 ```
 
 If you want to run the python program  on Discovery, follow this guide to set up anaconda: https://rc-docs.northeastern.edu/en/latest/software/conda.html. 

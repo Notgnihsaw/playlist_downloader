@@ -1,12 +1,62 @@
+#!/usr/bin/env
+
+
 from pytube import YouTube
 import os
- from bs4 import BeautifulSoup as bs
+from bs4 import BeautifulSoup as bs
 import requests
 import re
 import json
 import pandas as pd
 from moviepy.editor import *
 import sys
+
+def get_playlist_dict(soup_text):
+    # the script we want should be the 33rd script, or it is for this trial
+    key_script = soup_text.find_all("script")[33]
+    # delete the initial variable setting so we just have the JSON object
+    key_script_json = str(key_script.contents[0]).replace("var ytInitialData = ", "")
+    
+    # delete the final semicolon at the end (if it exists)
+    if key_script_json[-1] == ";":
+        key_script_json = key_script_json[:-1]
+    
+    # convert the string into JSON
+    playlist_dict = json.loads(key_script_json)
+    
+    return(playlist_dict)
+
+def get_video_list(playlist_dict):
+    
+    # extract the meaningful information
+    tab_renderer = playlist_dict['contents']["twoColumnBrowseResultsRenderer"]["tabs"][0]['tabRenderer']['content']
+    section_renderer = tab_renderer['sectionListRenderer']['contents']
+    video_list = section_renderer[0]['itemSectionRenderer']['contents'][0]['playlistVideoListRenderer']['contents']
+    
+    return(video_list)
+
+def get_participant_info(playlist_dict):
+    # get the title of the playlist
+    playlist_title = playlist_dict['metadata']['playlistMetadataRenderer']['title']
+    
+    # separate into participant and type of playlist
+    info_list = playlist_title.split()
+    
+    return({'participant': info_list[0], 'playlist_type':info_list[1].lower()})
+
+def get_video_info(video_element):
+    song_title = video_element['playlistVideoRenderer']['title']['runs'][0]['text']
+    song_byline = video_element['playlistVideoRenderer']['shortBylineText']['runs'][0]['text']
+    
+    song_url = 'youtube.com' + video_element['playlistVideoRenderer']['navigationEndpoint']['commandMetadata']['webCommandMetadata']['url']
+    
+    if song_byline[-8:] == ' - Topic':
+        song_byline = song_byline.replace(' - Topic', '')
+    if ' Official' in song_byline:
+        song_byline = song_byline.replace(' Official', '')
+        
+    
+    return({"title": song_title, "artist": song_byline, "url": song_url})
 
 def mp4_to_mp3(mp4_file, mp3_file):
     file_to_convert = AudioFileClip(mp4_file)
@@ -62,7 +112,7 @@ def download_video(video_url, path, video_name):
     new_file = base + '.mp3'
     mp4_to_mp3(out_file, new_file)
 
-
+# Run the program with the given arguments
 
 def main(args=None):
     # Isolate args from global arguments
