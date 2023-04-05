@@ -105,6 +105,8 @@ def main(args=None):
     # Isolate args from global arguments
     if args is None:
         # Handle no arguments
+        print(sys.argv[1:])
+
         try:
             # Divide options from args
             opts = [opt for opt in sys.argv[1:] if opt.startswith("-")]
@@ -118,6 +120,8 @@ def main(args=None):
         # load in text file of videos to download
         if "-v" in opts:
             verbose = True
+        else:
+            verbose = False
         
         # Run the program, first extracting links from the playlist
         playlist_dict = get_full_playlist_info(args[0], verbose)
