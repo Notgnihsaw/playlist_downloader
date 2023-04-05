@@ -13,11 +13,9 @@ To run this using Python on your home computer (or on discovery), you need to in
 
 Required python packages:
 ```
-- pytube
 - BeautifulSoup
 - requests
 - pandas
-- moviepy
 ```
 
 An easy way to do this is by running `pip3 install -t requirements.txt`, which installs the necessary python packages from the attached text file.
