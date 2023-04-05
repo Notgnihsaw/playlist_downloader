@@ -1,13 +1,10 @@
 #!/usr/bin/env
-
-from pytube import YouTube
 import os
 from bs4 import BeautifulSoup as bs
 import requests
 import re
 import json
 import pandas as pd
-from moviepy.editor import *
 import sys
 
 def get_playlist_dict(soup_text):
