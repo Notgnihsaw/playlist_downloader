@@ -61,6 +61,7 @@ def get_video_info(video_element):
 def mp4_to_mp3(mp4_file, mp3_file):
     file_to_convert = AudioFileClip(mp4_file)
     file_to_convert.write_audiofile(mp3_file, logger=None)
+    os.remove(mp4_file)
     file_to_convert.close()
 
 def get_full_playlist_info(playlist_link, info=False):
@@ -118,6 +119,8 @@ def main(args=None):
     # Isolate args from global arguments
     if args is None:
         # Handle no arguments
+        print(sys.argv[1:])
+
         try:
             # Divide options from args
             opts = [opt for opt in sys.argv[1:] if opt.startswith("-")]
@@ -131,15 +134,17 @@ def main(args=None):
         # load in text file of videos to download
         if "-v" in opts:
             verbose = True
+        else:
+            verbose = False
         
         # Run the program, first extracting links from the playlist
         playlist_dict = get_full_playlist_info(args[0], verbose)
         output_path = args[1]
         prefix = args[2]
-
+        print(playlist_dict["videos"])
         # Iterate through each video and download
-        for i in range(playlist_dict["videos"]):
-            download_video(playlist_dict['videos'][i], output_path, prefix + str(i))
+        for i in range(len(playlist_dict["videos"])):
+            download_video(playlist_dict['videos'][i]['url'], output_path, prefix + str(i))
 
 
 if __name__ == '__main__':
