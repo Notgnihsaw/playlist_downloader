@@ -1,6 +1,5 @@
 #!/usr/bin/env
 
-
 from pytube import YouTube
 import os
 from bs4 import BeautifulSoup as bs
@@ -58,12 +57,6 @@ def get_video_info(video_element):
     
     return({"title": song_title, "artist": song_byline, "url": song_url})
 
-def mp4_to_mp3(mp4_file, mp3_file):
-    file_to_convert = AudioFileClip(mp4_file)
-    file_to_convert.write_audiofile(mp3_file, logger=None)
-    os.remove(mp4_file)
-    file_to_convert.close()
-
 def get_full_playlist_info(playlist_link, info=False):
     # get the HTML from the link
     r = requests.get(playlist_link)
@@ -100,18 +93,14 @@ def get_full_playlist_info(playlist_link, info=False):
                     'videos': extracted_videos}
     
     return output_dict
-    
-# downloads an mp3 of the given youtube video
-def download_video(video_url, path, video_name):
-    video_audio = YouTube(video_url).streams.filter(only_audio=True).first()
-    
-    # download the file
-    out_file = video_audio.download(output_path=path, filename=video_name)
 
-    # save the file as mp3
-    base, ext = os.path.splitext(out_file)
-    new_file = base + '.mp3'
-    mp4_to_mp3(out_file, new_file)
+def output_dict_to_df(output_dict):
+    out_df = pd.DataFrame.from_dict(output_dict['videos'])
+
+    out_df['subject'] = output_dict['participant']
+    out_df['playlist_type'] = output_dict['playlist_type']
+    
+    return out_df
 
 # Run the program with the given arguments
 
@@ -126,10 +115,10 @@ def main(args=None):
             opts = [opt for opt in sys.argv[1:] if opt.startswith("-")]
             args = [arg for arg in sys.argv[1:] if not arg.startswith("-")]
         except IndexError:
-            raise SystemExit(f"Usage: {sys.argv[0]} [options: -v] [playlist url] [output path] [output prefix]")
+            raise SystemExit(f"Usage: {sys.argv[0]} [options: -v] [playlist url] [output path]")
 
         if len(args) < 3:
-            raise SystemExit(f"Usage: {sys.argv[0]} [options: -v] [playlist url] [output path] [output prefix]")
+            raise SystemExit(f"Usage: {sys.argv[0]} [options: -v] [playlist url] [output path]")
 
         # load in text file of videos to download
         if "-v" in opts:
@@ -140,11 +129,10 @@ def main(args=None):
         # Run the program, first extracting links from the playlist
         playlist_dict = get_full_playlist_info(args[0], verbose)
         output_path = args[1]
-        prefix = args[2]
-        print(playlist_dict["videos"])
-        # Iterate through each video and download
-        for i in range(len(playlist_dict["videos"])):
-            download_video(playlist_dict['videos'][i]['url'], output_path, prefix + str(i))
+
+        output_df = output_dict_to_df(playlist_dict)
+
+        output_df.to_csv(output_path)
 
 
 if __name__ == '__main__':
